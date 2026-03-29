@@ -119,7 +119,6 @@ sysctl -w net.ipv4.neigh.default.gc_thresh3=16384     >/dev/null
 ###############################################################################
 # 2. HUGEPAGES
 ###############################################################################
-sysctl -w vm.nr_hugepages=0                           >/dev/null
 if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
     echo madvise > /sys/kernel/mm/transparent_hugepage/enabled
     echo madvise > /sys/kernel/mm/transparent_hugepage/defrag
