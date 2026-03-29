@@ -436,27 +436,10 @@ for iface in /sys/class/net/*; do
     [[ "$IFNAME" == "lo" ]] && continue
     [[ -d "$iface/device" ]] || continue   # skip virtual
 
-    # Increase ring buffers
-    if command -v ethtool &>/dev/null; then
-        DRIVER=$(ethtool -i "$IFNAME" 2>/dev/null | grep driver | awk '{print $2}')
+    # Increase TX queue length (safe — no driver-level changes)
+    ip link set "$IFNAME" txqueuelen 10000 2>/dev/null || true
 
-        # Maximize ring buffers
-        ethtool -G "$IFNAME" rx 4096 tx 4096 2>/dev/null || true
-
-        # Offloads
-        ethtool -K "$IFNAME" rx-checksum on tx-checksum-ipv4 on tx-checksum-ipv6 on 2>/dev/null || true
-        ethtool -K "$IFNAME" tso on gso on gro on 2>/dev/null || true
-        ethtool -K "$IFNAME" tx-nocache-copy off 2>/dev/null || true
-
-        # Interrupt coalescing — low-latency profile
-        ethtool -C "$IFNAME" adaptive-rx off adaptive-tx off 2>/dev/null || true
-        ethtool -C "$IFNAME" rx-usecs 0 tx-usecs 0 2>/dev/null || true
-
-        # Increase TX queue length
-        ip link set "$IFNAME" txqueuelen 10000 2>/dev/null || true
-
-        log "  → $IFNAME ($DRIVER): ring buffers, offloads, coalescing tuned"
-    fi
+    log "  → $IFNAME: txqueuelen tuned"
 done
 
 ###############################################################################
