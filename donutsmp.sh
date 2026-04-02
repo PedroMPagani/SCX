@@ -618,6 +618,16 @@ fs.inotify.max_user_watches = 1048576
 fs.inotify.max_user_instances = 8192
 SYSCTL
 
+CWND=1820
+ip route show | while read -r route; do
+    echo "$route" | grep -q "initcwnd" && continue
+    ip route replace $route initcwnd $CWND initrwnd $CWND
+done
+ip route show | while read -r route; do
+    echo "$route" | grep -q "quickack" && continue
+    ip route replace $route quickack 1
+done
+
 log "  → /etc/sysctl.d/99-cachyos-performance.conf written"
 
 ###############################################################################
